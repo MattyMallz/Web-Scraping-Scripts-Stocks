@@ -1,0 +1,75 @@
+
+from bs4 import BeautifulSoup as Soup
+from urllib.request import Request, urlopen
+#specify url
+url = 'https://finance.yahoo.com/quote/SNAP?p=SNAP&.tsrc=fin-srch'
+
+req = Request(url, headers={'User-Agent': 'XYZ/3.0'})
+response = urlopen(req, timeout=20).read()
+page_soup = Soup(response, "html.parser")
+Stock_Price = page_soup.find_all('span', attrs={"data-reactid": "50"})
+Stock_Change = page_soup.find_all('span', attrs={"data-reactid": "51"})
+Stock_Date = page_soup.find_all('span', attrs={"data-reactid": "53"})
+Price = [p.text for p in Stock_Price]
+Change = [p.text for p in Stock_Change]
+Date = [p.text for p in Stock_Date]
+print("SNAP stock Information")
+print(Price)
+print(Change)
+print(Date)
+
+
+url_Two = 'https://finance.yahoo.com/quote/DKNG?p=DKNG&.tsrc=fin-srch'
+req_Two = Request(url_Two, headers={'User-Agent': 'XYZ/3.0'})
+response_Two = urlopen(req_Two, timeout=20).read()
+page_soup_Two = Soup(response_Two, "html.parser")
+Stock_Price_Two = page_soup_Two.find_all('span', attrs={"data-reactid": "46"})
+Stock_Change_Two = page_soup_Two.find_all('span', attrs={"data-reactid": "47"})
+Stock_Date_Two = page_soup_Two.find_all('span', attrs={"data-reactid": "49"})
+Price_Two = [p.text for p in Stock_Price_Two]
+Change_Two = [p.text for p in Stock_Change_Two]
+Date_Two = [p.text for p in Stock_Date_Two]
+print("DKNG stock Information")
+price_mod_two = print(Price_Two[1:])
+#print(price_mod_two)
+
+change_mod_two = print(Change_Two[1:])
+#print(change_mod_two)
+
+date_mod_two = print(Date_Two[1:])
+#print(date_mod_two)
+
+url_Three = 'https://finance.yahoo.com/quote/WEN?p=WEN&.tsrc=fin-srch'
+req_Three = Request(url_Three, headers={'User-Agent': 'XYZ/3.0'})
+response_Three = urlopen(req_Three, timeout=20).read()
+page_soup_Three = Soup(response_Three, "html.parser")
+Stock_Price_Three = page_soup_Three.find_all('span', attrs={"data-reactid": "50"})
+Stock_Change_Three = page_soup_Three.find_all('span', attrs={"data-reactid": "51"})
+Stock_Date_Three = page_soup_Three.find_all('span', attrs={"data-reactid": "53"})
+Price_Three = [p.text for p in Stock_Price_Three]
+Change_Three = [p.text for p in Stock_Change_Three]
+Date_Three = [p.text for p in Stock_Date_Three]
+print("WENDYS stock Information")
+print(Price_Three)
+print(Change_Three)
+print(Date_Three)
+#https://finance.yahoo.com/quote/UAA?p=UAA&.tsrc=fin-srch
+
+url_Four = 'https://finance.yahoo.com/quote/UAA?p=UAA&.tsrc=fin-srch'
+req_Four = Request(url_Four, headers={'User-Agent': 'XYZ/3.0'})
+response_Four = urlopen(req_Four, timeout=20).read()
+page_soup_Four = Soup(response_Four, "html.parser")
+Stock_Price_Four = page_soup_Four.find_all('span', attrs={"data-reactid": "50"})
+Stock_Change_Four = page_soup_Four.find_all('span', attrs={"data-reactid": "51"})
+Stock_Date_Four = page_soup_Four.find_all('span', attrs={"data-reactid": "53"})
+Price_Four = [p.text for p in Stock_Price_Four]
+Change_Four = [p.text for p in Stock_Change_Four]
+Date_Four = [p.text for p in Stock_Date_Four]
+print("UAA stock Information")
+print(Price_Four)
+print(Change_Four)
+print(Date_Four)
+
+
+
+
