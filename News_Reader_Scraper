@@ -1,0 +1,52 @@
+
+from bs4 import BeautifulSoup as Soup
+
+from urllib.request import urlopen as uReq
+
+
+my_url = 'https://www.nytimes.com/2021/01/29/health/covid-vaccine-johnson-and-johnson-variants.html'
+
+uClient = uReq(my_url)
+
+page_html = uClient.read()
+
+uClient.close()
+
+page_soup = Soup(page_html, "html.parser")
+
+Titles = (page_soup.find_all("p"))
+
+print("there are this many headlines today: "), print(len(Titles))
+
+print(Titles)
+
+Example = [x.text for x in Titles]
+
+print(Example)
+
+print(Example, file=open("DATA_F.txt", "a"))
+
+import gtts
+from gtts import gTTS
+import os
+
+
+fh = open("DATA_F.txt", "r")
+myText = fh.read()
+
+language = 'en'
+
+output = gTTS(text=myText, lang=language, slow=False)
+
+output.save("Audio_y.mp3")
+
+fh.close()
+os.system("Audio_y.mp3")
+
+os.remove("Audio_y.mp3")
+
+os.remove('DATA_F.txt')
+
+
+
+
