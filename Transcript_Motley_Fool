@@ -1,4 +1,4 @@
-
+##This code was largely deriven from a youtube video made by "pyohio". i merely altered it to a stock earnings call text record to see if it would work. 
 
 from bs4 import BeautifulSoup as Soup
 
