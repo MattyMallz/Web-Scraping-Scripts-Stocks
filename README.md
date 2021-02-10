@@ -1,4 +1,4 @@
-# Web-Scraping-Scripts
+# Web-Scraping-Scripts//Stocks
 
 These are just a few samples of my webscraping scripts. 
 
