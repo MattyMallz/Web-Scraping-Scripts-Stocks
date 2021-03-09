@@ -1,0 +1,57 @@
+
+import pip
+import bs4
+from bs4 import BeautifulSoup as Soup
+from urllib.request import urlopen as uReq
+
+import re
+import pandas as pd
+import urllib.request
+from urllib.request import Request, urlopen
+from pandas import DataFrame
+
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 1000)
+
+def url_to_transcript(url):
+    for i in url:
+        uClient = uReq(url)
+        page_html = uClient.read()
+        uClient.close()
+        page_soup = Soup(page_html, "html.parser")
+        apps = page_soup.find_all('span', {"class":"htlgb"})
+        #print(apps)
+        title = page_soup.find_all('a', {"class": "hrTbp R8zArc"})
+        title_parsed = [p.text for p in title]
+        #print(title_parsed[0])
+        Example = [x.text for x in apps]
+        #print(Example[1] + " Last update")
+        #print(Example[4] + " Rough installs")
+
+        data = {
+            'company':title_parsed[0],
+            'genre':title_parsed[1],
+            'date':Example[1],
+            "approx_installs":Example[4]
+        }
+        #df = pd.DataFrame([data])
+
+        # saving the dataframe
+        #df.to_csv('appz.csv')
+
+        return data
+
+urls = ['https://play.google.com/store/apps/details?id=com.quok.blobRunner',
+        'https://play.google.com/store/apps/details?id=com.uncosoft.highheels',
+        'https://play.google.com/store/apps/details?id=com.quok.repairMaster3d',
+        'https://play.google.com/store/apps/details?id=com.rollic.tanglemaster3D',
+        'https://play.google.com/store/apps/details?id=com.nanotribe.games.cashier3d',
+        ]
+transcripts = [url_to_transcript(u) for u in urls]
+
+df = DataFrame (transcripts).transpose()
+print(df.head())
+print(df.dtypes)
+
+
