@@ -1,0 +1,289 @@
+### WITH IMPORTS CORRECT THIS IS STILL WORKING 5//15//2024
+### Still a lot to understand and work on here. 
+### is going to work with Chat GPT to help aquire more advanced and also more readible analysis. 
+### will need to rewatch the tutorialto build from scratch. and propperly understand whats happening.
+### can than use this to hopefull save transcripts to a database and then do even more cool things with the data.
+### it would be cool to be able to tell somehow if people are being honest... or  way to pick out claims from the tranascript and then 
+### somehow fact checm those. 
+
+from bs4 import BeautifulSoup as Soup
+
+from urllib.request import urlopen as uReq
+
+import pickle
+
+
+# This Function succesfully extracts all text from earnings call transcipt, posted by "The Motley Fool."
+# A financial column based Website.
+
+
+import requests
+from bs4 import BeautifulSoup as Soup
+import pickle
+
+def url_to_transcript(url):
+    for i in url:
+        response = requests.get(url, verify=False)  # Disable SSL verification
+        page_html = response.text
+        page_soup = Soup(page_html, "html.parser")
+        Schools = page_soup.find_all("p")
+        print(Schools)
+        Example = [x.text for x in Schools]
+        print(url)
+        return Example
+
+# copy and paste companies earnings calls transcripts.
+
+urls = [
+    'https://www.fool.com/earnings/call-transcripts/2020/04/29/general-electric-company-ge-q1-2020-earnings-call.aspx',
+    'https://www.fool.com/earnings/call-transcripts/2020/04/29/deutsche-bank-ag-db-q1-2020-earnings-call-transcri.aspx',
+    'https://www.fool.com/earnings/call-transcripts/2020/04/29/boeing-co-ba-q1-2020-earnings-call-transcript.aspx',
+    'https://www.fool.com/earnings/call-transcripts/2020/04/29/mks-instruments-inc-mksi-q1-2020-earnings-call-tra.aspx',
+    'https://www.fool.com/earnings/call-transcripts/2020/04/29/celestica-inc-cls-q1-2020-earnings-call-transcript.aspx',
+    'https://www.fool.com/earnings/call-transcripts/2020/04/29/garmin-ltd-grmn-q1-2020-earnings-call-transcript.aspx',
+    'https://www.fool.com/earnings/call-transcripts/2020/04/29/new-york-community-bancorp-inc-nycb-q1-2020-earnin.aspx',
+    'https://www.fool.com/earnings/call-transcripts/2020/04/29/alkermes-plc-alks-q1-2020-earnings-call-transcript.aspx',
+    'https://www.fool.com/earnings/call-transcripts/2020/04/29/silicon-motion-technology-corp-simo-q1-2020-earnin.aspx',
+    'https://www.fool.com/earnings/call-transcripts/2020/04/29/fresh-del-monte-produce-inc-fdp-q1-2020-earnings-c.aspx',
+    ]
+
+# Article_00 = url_to_transcript('https://www.fool.com/retirement/2020/03/23/could-trumps-stimulus-check-exclude-social-securit.aspx')
+# Article_01 = url_to_transcript('https://www.fool.com/investing/2020/03/25/4-bargain-stocks-to-buy-before-the-market-goes-bac.aspx')
+
+# Running the list of urls------> function.
+
+transcripts = [url_to_transcript(u) for u in urls]
+
+categories = ['General_Electric', 'deutsche-bank', 'boeing-co', 'mks-instruments-inc', 'celestica-inc', 'garmin-ltd',
+              'new-york-community-bancorp-inc', 'alkermes-plc', 'silicon-motion-technology',
+              'fresh-del-monte-produce-inc']
+
+print(transcripts)
+
+for i, c in enumerate(categories):
+    with open("transcripts" + c + ".txt", "wb") as file:
+        pickle.dump(transcripts[i], file)
+
+# Load the above saved data and print data columns ie categories/headlines
+
+
+data = {}
+for i, c in enumerate(categories):
+    with open("transcripts" + c + ".txt", "rb") as file:
+        data[c] = pickle.load(file)
+
+print(data.keys())
+##Cleaning data process
+print(next(iter(data.keys())))
+
+print(next(iter(data.values())))
+
+
+def combine_text(list_of_text):
+    combine_text = ''.join(list_of_text)
+    return combine_text
+
+
+data_combined = {key: [combine_text(value)] for (key, value) in data.items()}
+
+import pandas as pd
+
+pd.set_option('max_colwidth', 200)
+
+data_df = pd.DataFrame.from_dict(data_combined).transpose()
+data_df.columns = ['transcript']
+data_df = data_df.sort_index()
+print(data_df)
+
+print(data_df.transcript.loc['General_Electric'])
+
+import string
+import re
+
+pd.set_option('max_colwidth', 210)
+pd.set_option("display.max_rows", 5)
+
+
+def clean_text_round1(text):
+    '''Make text lowercase, remove text in square brackets, remove punctuation and remove words containing numbers.'''
+    text = text.lower()
+    text = re.sub('[%s]' % re.escape(string.punctuation), '', text)
+    text = re.sub('\w*\d\w*', '', text)
+    text = re.sub('<< $& >>', '', text)
+    text = re.sub(r"^.+?(?=earnings)", " ", text)
+
+    return text
+
+
+round1 = lambda x: clean_text_round1(x)
+
+data_clean = pd.DataFrame(data_df.transcript.apply(round1))
+print(data_clean)
+
+###Founded in 1993 by brothers Tom and David Gardner, The Motley Fool helps millions of people attain financial freedom through our website, podcasts, books, newspaper column, radio show, and premium investing services.Click here for The Motley Fool's resources on Coronavirus and the market.
+
+
+print(data_df)
+
+Title = ['GE', 'DB', 'BA', 'MKSI', 'CLS', 'GRMN', 'NYCB', 'ALKS', 'SIMO', 'FDP']
+
+data_clean['Headline'] = Title
+
+print(data_clean)
+
+# data_df = data_clean for your tutorial purposes
+
+data_clean.to_pickle("corpus.pk1")
+
+print(data_clean[:3])
+
+from sklearn.feature_extraction.text import CountVectorizer
+
+cv = CountVectorizer(stop_words='english')
+data_cv = cv.fit_transform(data_clean.transcript)
+data_dtm = pd.DataFrame(data_cv.toarray(), columns=cv.get_feature_names())
+data_dtm.index = data_clean.index
+print(data_dtm)
+
+data_dtm.to_pickle("dtm.pkl")
+
+data_clean.to_pickle('data_clean.pkl')
+pickle.dump(cv, open("cv.pkl", "wb"))
+
+#### Exploratory analysis Mnay ways to skin a cat here
+
+# for each title find highest word count
+
+data = pd.read_pickle('dtm.pkl')
+data = data.transpose()
+data.head()
+
+top_dict = {}
+for c in data.columns:
+    top = data[c].sort_values(ascending=False).head(30)
+    top_dict[c] = list(zip(top.index, top.values))
+
+print(top_dict)
+
+for categories, top_words in top_dict.items():
+    print(categories)
+    print(', '.join([word for word, count in top_words[0:14]]))
+    print('---')
+
+from collections import Counter
+
+# Let's first pull out the top 30 words for each article url
+words = []
+for category in data.columns:
+    top = [word for (word, count) in top_dict[category]]
+    for t in top:
+        words.append(t)
+
+print(words)
+
+print(Counter(words).most_common())
+
+# you have strayed from tutorial by writing the six as less than, but was necesssary for data analysis
+
+add_stop_words = [word for word, count in Counter(words).most_common() if count > 3]
+print(add_stop_words)
+
+# Let's update our document-term matrix with the new list of stop words
+from sklearn.feature_extraction import text
+from sklearn.feature_extraction.text import CountVectorizer
+
+data_clean = pd.read_pickle('data_clean.pkl')
+
+print(data_clean)
+
+stop_words = text.ENGLISH_STOP_WORDS.union(add_stop_words)
+
+cv = CountVectorizer(stop_words=stop_words)
+data_cv = cv.fit_transform(data_clean.transcript)
+data_stop = pd.DataFrame(data_cv.toarray(), columns=cv.get_feature_names())
+data_stop.index = data_clean.index
+
+import pickle
+
+pickle.dump(cv, open("cv_stop.pkl", "wb"))
+data_stop.to_pickle("dtm_stop.pkl")
+
+# Identify the non-zero items in the document-term matrix, meaning that the word occurs at least once
+unique_list = []
+for categories in data.columns:
+    uniques = data[categories].to_numpy().nonzero()[0].size
+    unique_list.append(uniques)
+
+# Create a new dataframe that contains this unique word count
+data_words = pd.DataFrame(list(zip(Title, unique_list)), columns=['Cateory', 'unique_words'])
+data_unique_sort = data_words.sort_values(by='unique_words')
+print(data_unique_sort)
+
+total_list = []
+for categories in data.columns:
+    totals = sum(data[categories])
+    total_list.append(totals)
+
+data_words['total_words'] = total_list
+
+data_wpm_sort = data_words.sort_values(by='unique_words')
+print(data_wpm_sort)
+
+# This plotting section requires another variable
+'''
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+y_pos = np.arange(len(data_words))
+
+plt.subplot(1, 2, 1)
+plt.barh(y_pos, data_unique_sort.unique_words, align='center')
+plt.yticks(y_pos, data_unique_sort.categories)
+plt.title('Number of Unique Words', fontsize=20)
+
+plt.subplot(1, 2, 2)
+plt.barh(y_pos, data_wpm_sort.words_per_minute, align='center')
+plt.yticks(y_pos, data_wpm_sort.categories)
+plt.title('Number of Words Per Minute', fontsize=20)
+
+print(plt.tight_layout())
+print(plt.show())
+
+'''
+print(Counter(words).most_common())
+
+import pandas as pd
+
+pd.set_option('max_colwidth', 200)
+pd.set_option('display.max_columns', 10)
+
+data = pd.read_pickle('data_clean.pkl')
+print(data)
+
+from textblob import TextBlob
+
+pol = lambda x: TextBlob(x).sentiment.polarity
+sub = lambda x: TextBlob(x).sentiment.subjectivity
+
+data['polarity'] = data['transcript'].apply(pol)
+data['subjectivity'] = data['transcript'].apply(sub)
+print(data)
+
+import matplotlib.pyplot as plt
+
+plt.rcParams['figure.figsize'] = [10, 8]
+
+for index, categories in enumerate(data.index):
+    x = data.polarity.loc[categories]
+    y = data.subjectivity.loc[categories]
+    plt.scatter(x, y, color='blue')
+    plt.text(x + .001, y + .001, data_clean['Headline'][index], fontsize=10)
+    plt.xlim(-.01, .12)
+
+plt.title('The Motley Fool Sentiment Analysis', fontsize=20)
+plt.xlabel('<-- Negative -------- Positive -->', fontsize=15)
+plt.ylabel('<-- Facts -------- Opinions -->', fontsize=15)
+
+plt.show()
+
